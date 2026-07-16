@@ -79,6 +79,14 @@ export function useQuery<T extends TableName>(
     setLoading(true);
     setError(null);
 
+    // Derive the filter from the stable serialised key so this callback only
+    // re-creates when the serialised value actually changes, not on every
+    // render where a parent might supply a new-but-equal filter object.
+    const parsedFilter: QueryFilter<T> | null =
+      stableFilterKey && stableFilterKey !== 'null'
+        ? (JSON.parse(stableFilterKey) as QueryFilter<T>)
+        : null;
+
     try {
       // Build the query
       let query = supabase.from(table).select(select) as ReturnType<
@@ -86,8 +94,8 @@ export function useQuery<T extends TableName>(
       >['select'];
 
       // Apply filters
-      if (filter) {
-        for (const [col, val] of Object.entries(filter)) {
+      if (parsedFilter) {
+        for (const [col, val] of Object.entries(parsedFilter)) {
           if (val !== undefined) {
             query = (query as unknown as { eq: (c: string, v: unknown) => typeof query }).eq(col, val);
           }
