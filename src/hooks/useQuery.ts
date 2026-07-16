@@ -83,7 +83,7 @@ export function useQuery<T extends TableName>(
     // re-creates when the serialised value actually changes, not on every
     // render where a parent might supply a new-but-equal filter object.
     const parsedFilter: QueryFilter<T> | null =
-      stableFilterKey !== 'null'
+      stableFilterKey && stableFilterKey !== 'null'
         ? (JSON.parse(stableFilterKey) as QueryFilter<T>)
         : null;
 
